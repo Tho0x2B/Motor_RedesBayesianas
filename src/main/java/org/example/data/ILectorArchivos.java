@@ -1,4 +1,4 @@
-package src.main.java.org.example.data;
+package org.example.data;
 
 import java.io.IOException;
 import java.util.List;

@@ -1,0 +1,7 @@
+Rain,none,0.7
+Rain,light,0.2
+Rain,heavy,0.1
+Train,Rain=none;Maintenance=yes;Train=ontime,0.8
+Train,Rain=none;Maintenance=no;Train=delayed,0.1
+Appointment,Train=ontime;App=attend,0.9
+Appointment,Train=delayed;App=miss,0.4

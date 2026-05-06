@@ -1,10 +1,10 @@
-package src.main.java.org.example.controller;
+package org.example.controller;
 
 
-import src.main.java.org.example.data.ILectorArchivos;
-import src.main.java.org.example.model.Nodo;
-import src.main.java.org.example.model.RedBayesiana;
-import src.main.java.org.example.view.VistaRed;
+import org.example.data.ILectorArchivos;
+import org.example.model.Nodo;
+import org.example.model.RedBayesiana;
+import org.example.view.VistaRed;
 
 import java.io.IOException;
 import java.util.List;

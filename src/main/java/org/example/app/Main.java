@@ -1,11 +1,10 @@
-package src.main.java.org.example.app;
+package org.example.app;
 
-
-import src.main.java.org.example.controller.ControladorRed;
-import src.main.java.org.example.data.ILectorArchivos;
-import src.main.java.org.example.data.LectorArchivosTexto;
-import src.main.java.org.example.model.RedBayesiana;
-import src.main.java.org.example.view.VistaRed;
+import org.example.controller.ControladorRed;
+import org.example.data.ILectorArchivos;
+import org.example.data.LectorArchivosTexto;
+import org.example.model.RedBayesiana;
+import org.example.view.VistaRed;
 
 public class Main {
     public static void main(String[] args) {

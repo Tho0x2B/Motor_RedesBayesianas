@@ -1,7 +1,7 @@
-package src.main.java.org.example.view;
+package org.example.view;
 
-import src.main.java.org.example.model.Nodo;
-import src.main.java.org.example.model.RedBayesiana;
+import org.example.model.Nodo;
+import org.example.model.RedBayesiana;
 
 import java.util.List;
 import java.util.Map;
