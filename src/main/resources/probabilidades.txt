@@ -1,7 +1,25 @@
-Rain,none,0.7
-Rain,light,0.2
-Rain,heavy,0.1
-Train,Rain=none;Maintenance=yes;Train=ontime,0.8
+Rain,Rain=none,0.7
+Rain,Rain=light,0.2
+Rain,Rain=heavy,0.1
+Maintenance,Rain=none;Maintenance=yes,0.4
+Maintenance,Rain=none;Maintenance=no,0.6
+Maintenance,Rain=light;Maintenance=yes,0.2
+Maintenance,Rain=light;Maintenance=no,0.8
+Maintenance,Rain=heavy;Maintenance=yes,0.1
+Maintenance,Rain=heavy;Maintenance=no,0.9
+Train,Rain=none;Maintenance=yes;Train=on time,0.8
+Train,Rain=none;Maintenance=yes;Train=delayed,0.2
+Train,Rain=none;Maintenance=no;Train=on time,0.9
 Train,Rain=none;Maintenance=no;Train=delayed,0.1
-Appointment,Train=ontime;App=attend,0.9
-Appointment,Train=delayed;App=miss,0.4
+Train,Rain=light;Maintenance=yes;Train=on time,0.6
+Train,Rain=light;Maintenance=yes;Train=delayed,0.4
+Train,Rain=light;Maintenance=no;Train=on time,0.7
+Train,Rain=light;Maintenance=no;Train=delayed,0.3
+Train,Rain=heavy;Maintenance=yes;Train=on time,0.4
+Train,Rain=heavy;Maintenance=yes;Train=delayed,0.6
+Train,Rain=heavy;Maintenance=no;Train=on time,0.5
+Train,Rain=heavy;Maintenance=no;Train=delayed,0.5
+Appointment,Train=on time;Appointment=attend,0.9
+Appointment,Train=on time;Appointment=miss,0.1
+Appointment,Train=delayed;Appointment=attend,0.6
+Appointment,Train=delayed;Appointment=miss,0.4
