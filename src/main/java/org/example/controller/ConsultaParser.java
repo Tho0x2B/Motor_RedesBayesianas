@@ -1,13 +1,24 @@
 package org.example.controller;
 
-import org.example.model.ConsultaDTO;
+import org.example.model.Asignacion;
+import org.example.model.Consulta;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ConsultaParser implements IConsultaParser {
+/**
+ * Parser de consultas por consola.
+ *
+ * Soporta:
+ *  - P(Variable)
+ *  - P(Variable=valor)
+ *  - P(Variable | A=v, B=v)
+ *  - P(Variable=valor | A=v;B=v)
+ */
+public final class ConsultaParser implements IConsultaParser {
 
     @Override
-    public ConsultaDTO parse(String input) {
+    public Consulta parse(String input) {
         if (input == null) throw new IllegalArgumentException("Consulta nula");
         String s = input.trim();
         if (s.isEmpty()) throw new IllegalArgumentException("Consulta vacía");
@@ -42,17 +53,16 @@ public class ConsultaParser implements IConsultaParser {
 
         if (variable.isEmpty()) throw new IllegalArgumentException("Variable de consulta vacía");
 
-        Map<String, String> evidencia = parseEvidencia(evidencePart);
-        return new ConsultaDTO(variable, (valor != null && !valor.isEmpty()) ? valor : null, evidencia);
+        List<Asignacion> evidencia = parseEvidencia(evidencePart);
+        return new Consulta(variable, (valor != null && !valor.isEmpty()) ? valor : null, evidencia);
     }
 
-    public static Map<String, String> parseEvidencia(String evidencePart) {
-        Map<String, String> e = new LinkedHashMap<>();
+    private List<Asignacion> parseEvidencia(String evidencePart) {
+        List<Asignacion> e = new ArrayList<>();
         if (evidencePart == null) return e;
         String s = evidencePart.trim();
         if (s.isEmpty()) return e;
 
-        // separadores ',' o ';'
         String[] items = s.split("[;,]");
         for (String raw : items) {
             String it = raw.trim();
@@ -63,10 +73,7 @@ public class ConsultaParser implements IConsultaParser {
             String[] kv = it.split("=", 2);
             String k = kv[0].trim();
             String v = kv[1].trim();
-            if (k.isEmpty() || v.isEmpty()) {
-                throw new IllegalArgumentException("Evidencia inválida: '" + it + "'. Usa Var=valor");
-            }
-            e.put(k, v);
+            e.add(new Asignacion(k, v));
         }
         return e;
     }

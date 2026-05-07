@@ -1,57 +1,69 @@
 package org.example.controller;
 
-
-import org.example.model.ConsultaDTO;
 import org.example.data.ILectorArchivos;
+import org.example.model.Asignacion;
+import org.example.model.Consulta;
 import org.example.model.RedBayesiana;
 import org.example.view.VistaRed;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-
 
 public class ControladorRed {
     private final RedBayesiana modelo;
     private final VistaRed vista;
     private final ILectorArchivos lector;
-    private final IConsultaParser consultaParser;
+    private final ConsultaParser parser;
+    private final MotorInferencia motor; // Dependencia inyectada
 
-    public ControladorRed(RedBayesiana modelo, VistaRed vista, ILectorArchivos lector, IConsultaParser consultaParser) {
+    public ControladorRed(RedBayesiana modelo, VistaRed vista, ILectorArchivos lector,
+                          ConsultaParser parser, MotorInferencia motor) {
         this.modelo = modelo;
         this.vista = vista;
         this.lector = lector;
-        this.consultaParser = consultaParser;
+        this.parser = parser;
+        this.motor = motor;
     }
 
-    public void inicializarRed(String rutaEstructura, String rutaProbabilidades) {
+    public void inicializar(String archivoEstructura, String archivoProbabilidades) {
         try {
-            // El lector inyecta los datos directamente en el modelo (eficiencia máxima)
-            lector.construirEstructura(rutaEstructura, modelo);
-            lector.cargarProbabilidades(rutaProbabilidades, modelo);
+            lector.construirEstructura(archivoEstructura, modelo);
+            lector.cargarProbabilidades(archivoProbabilidades, modelo);
+            vista.mostrarEstructura(modelo);
+            vista.mostrarTablas(modelo);
         } catch (IOException e) {
-            vista.mostrarError("Error crítico en la carga de datos: " + e.getMessage());
+            vista.mostrarError("Error crítico de I/O: " + e.getMessage());
         }
     }
 
-    public void mostrarSistema() {
-        vista.mostrarEstructura(modelo);
-        vista.mostrarTablas(modelo);
-    }
-
-    public void resolverConsultaPorEnumeracion(String consultaCruda) {
+    public void procesarConsulta(String comandoUsuario) {
         try {
-            ConsultaDTO c = consultaParser.parse(consultaCruda);
-            MotorInferencia motor = new MotorInferencia();
+            Consulta consulta = parser.parse(comandoUsuario);
+            Map<String, String> evidencia = toMap(consulta.getEvidencia());
 
-            if (c.getValorOpcional() != null) {
-                double p = motor.probabilidadPosterior(modelo, c.getVariable(), c.getValorOpcional(), c.getEvidencia());
-                vista.mostrarProbabilidadPuntual(c.getVariable(), c.getValorOpcional(), c.getEvidencia(), p);
+            String variable = consulta.getVariable();
+            String valor = consulta.getValorOpcional();
+
+            if (valor != null) {
+                double p = motor.probabilidadPosterior(modelo, variable, valor, evidencia);
+                vista.mostrarProbabilidadPuntual(variable, valor, evidencia, p);
             } else {
-                Map<String, Double> dist = motor.distribucionPosterior(modelo, c.getVariable(), c.getEvidencia());
-                vista.mostrarDistribucion(c.getVariable(), c.getEvidencia(), dist);
+                Map<String, Double> distribucion = motor.distribucionPosterior(modelo, variable, evidencia);
+                vista.mostrarDistribucion(variable, evidencia, distribucion);
             }
-        } catch (RuntimeException ex) {
-            vista.mostrarError(ex.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            vista.mostrarError("Comando inválido: " + e.getMessage());
         }
+    }
+
+    private Map<String, String> toMap(List<Asignacion> evidencia) {
+        Map<String, String> m = new LinkedHashMap<>();
+        if (evidencia == null) return m;
+        for (Asignacion a : evidencia) {
+            m.put(a.getVariable(), a.getValor());
+        }
+        return m;
     }
 }

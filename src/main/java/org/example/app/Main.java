@@ -2,7 +2,7 @@ package org.example.app;
 
 import org.example.controller.ConsultaParser;
 import org.example.controller.ControladorRed;
-import org.example.controller.IConsultaParser;
+import org.example.controller.MotorInferencia;
 import org.example.data.ILectorArchivos;
 import org.example.data.LectorArchivosTexto;
 import org.example.model.RedBayesiana;
@@ -12,39 +12,42 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+        // 1. Instanciación de componentes base (Grafo, UI, Lógica)
         RedBayesiana modelo = new RedBayesiana();
-
         VistaRed vista = new VistaRed();
 
+        // 2. Instanciación de Servicios
         ILectorArchivos lector = new LectorArchivosTexto();
-        IConsultaParser consultaParser = new ConsultaParser();
+        ConsultaParser parser = new ConsultaParser();
+        MotorInferencia motor = new MotorInferencia();
 
-        ControladorRed controlador = new ControladorRed(modelo, vista, lector, consultaParser);
+        // 3. Inyección de Dependencias en el Controlador
+        ControladorRed controlador = new ControladorRed(modelo, vista, lector, parser, motor);
 
-        controlador.inicializarRed("estructura.txt", "probabilidades.txt");
+        // 4. Inicialización
+        controlador.inicializar("estructura.txt", "probabilidades.txt");
 
-        controlador.mostrarSistema();
+        // 5. Bucle de aplicación
+        ejecutarTerminal(controlador);
+    }
 
-        System.out.println();
-        System.out.println("==============================================");
-        System.out.println("Modo consulta (enumeración con backtracking)");
-        System.out.println("Escribe consultas como:");
-        System.out.println("  P(Train=delayed | Rain=heavy, Maintenance=no)");
-        System.out.println("  P(Appointment | Rain=light)");
+    private static void ejecutarTerminal(ControladorRed controlador) {
+        System.out.println("\n==============================================");
+        System.out.println("Motor de Inferencia Bayesiana Activo");
+        System.out.println("Formato: P(Variable=valor | Evidencia1=v1, Evidencia2=v2)");
         System.out.println("Escribe 'salir' para terminar.");
         System.out.println("==============================================");
 
         try (Scanner sc = new Scanner(System.in)) {
             while (true) {
                 System.out.print("> ");
-                String line = sc.nextLine();
-                if (line == null) break;
-                line = line.trim();
-                if (line.equalsIgnoreCase("salir") || line.equalsIgnoreCase("exit")) {
+                String input = sc.nextLine();
+                if (input == null || input.trim().equalsIgnoreCase("salir")) {
                     break;
                 }
-                if (line.isEmpty()) continue;
-                controlador.resolverConsultaPorEnumeracion(line);
+                if (!input.trim().isEmpty()) {
+                    controlador.procesarConsulta(input);
+                }
             }
         }
     }

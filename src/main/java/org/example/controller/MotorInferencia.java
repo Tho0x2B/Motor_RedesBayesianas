@@ -7,142 +7,81 @@ import java.util.*;
 
 public class MotorInferencia {
 
-    /**
-     * Calcula la distribución P(X | E) por enumeración con backtracking.
-     */
     public Map<String, Double> distribucionPosterior(RedBayesiana red, String variableConsulta, Map<String, String> evidencia) {
-        if (variableConsulta == null || variableConsulta.trim().isEmpty()) {
-            throw new IllegalArgumentException("Variable de consulta vacía");
-        }
-        if (!red.contieneNodo(variableConsulta)) {
-            throw new IllegalArgumentException("Variable de consulta no existe en la red: " + variableConsulta);
-        }
-
-        evidencia = (evidencia == null) ? new LinkedHashMap<>() : new LinkedHashMap<>(evidencia);
-
-        // Validación básica: evidencia con variables que existan
-        for (String k : evidencia.keySet()) {
-            if (!red.contieneNodo(k)) {
-                throw new IllegalArgumentException("La evidencia contiene una variable desconocida: " + k);
-            }
-        }
+        validarParametros(red, variableConsulta, evidencia);
 
         List<Nodo> orden = red.getNodosEnOrdenTopologico();
-        Nodo q = red.obtenerNodo(variableConsulta);
-        Set<String> dominioQ = red.extraerDominio(q);
-        if (dominioQ.isEmpty()) {
-            throw new IllegalStateException("No se pudo inferir el dominio de la variable: " + variableConsulta);
+        Set<String> dominioQ = red.extraerDominio(variableConsulta);
+
+        Map<String, Double> distribucion = new LinkedHashMap<>();
+        Map<String, String> estadoGlobal = new HashMap<>(evidencia != null ? evidencia : Collections.emptyMap());
+        double sumaTotal = 0.0;
+
+        // 1. Calcular distribuciones no normalizadas
+        for (String valorPosible : dominioQ) {
+            estadoGlobal.put(variableConsulta, valorPosible);
+
+            // Usamos un único mapa de estado para todo el árbol de recursión (Rápido y eficiente en RAM)
+            double probabilidad = backtrack(red, orden, 0, estadoGlobal);
+
+            distribucion.put(valorPosible, probabilidad);
+            sumaTotal += probabilidad;
+
+            estadoGlobal.remove(variableConsulta);
         }
 
-        Map<String, Double> distNoNorm = new LinkedHashMap<>();
-        double total = 0.0;
-        for (String vq : dominioQ) {
-            Map<String, String> asg = new LinkedHashMap<>(evidencia);
-            asg.put(variableConsulta, vq);
-            double p = probabilidadConjuntaPorBacktracking(red, orden, asg);
-            distNoNorm.put(vq, p);
-            total += p;
+        // 2. Normalización (Constante Alfa)
+        if (sumaTotal > 0.0) {
+            for (Map.Entry<String, Double> entrada : distribucion.entrySet()) {
+                distribucion.put(entrada.getKey(), entrada.getValue() / sumaTotal);
+            }
+        } else {
+            // Manejo de evidencia imposible
+            dominioQ.forEach(v -> distribucion.put(v, 0.0));
         }
 
-        Map<String, Double> dist = new LinkedHashMap<>();
-        if (total == 0.0) {
-            // evidencia imposible o tabla incompleta
-            for (String vq : dominioQ) dist.put(vq, 0.0);
-            return dist;
-        }
-        for (Map.Entry<String, Double> e : distNoNorm.entrySet()) {
-            dist.put(e.getKey(), e.getValue() / total);
-        }
-        return dist;
+        return distribucion;
     }
 
-    /**
-     * Calcula P(X=valor | E) usando la distribución posterior.
-     */
     public double probabilidadPosterior(RedBayesiana red, String variable, String valor, Map<String, String> evidencia) {
         Map<String, Double> dist = distribucionPosterior(red, variable, evidencia);
-        Double p = dist.get(valor);
-        if (p == null) {
-            throw new IllegalArgumentException("El valor '" + valor + "' no pertenece al dominio observado de '" + variable + "'");
-        }
-        return p;
+        return dist.getOrDefault(valor, 0.0);
     }
 
-    /**
-     * Backtracking sobre variables NO asignadas. Multiplica factores locales P(Y | Padres(Y)).
-     *
-     * Si una variable binaria no asignada, esto efectivamente recorre 2^n combinaciones.
-     */
-    private double probabilidadConjuntaPorBacktracking(RedBayesiana red, List<Nodo> ordenTopologico, Map<String, String> asignacionParcial) {
-        Map<String, String> asg = new LinkedHashMap<>(asignacionParcial);
-        Map<String, Double> memo = new HashMap<>();
-        return backtrack(red, ordenTopologico, 0, asg, memo);
-    }
-
-    private double backtrack(RedBayesiana red, List<Nodo> orden, int idx, Map<String, String> asg, Map<String, Double> memo) {
+    private double backtrack(RedBayesiana red, List<Nodo> orden, int idx, Map<String, String> estado) {
         if (idx >= orden.size()) return 1.0;
 
-        String key = claveMemo(orden, idx, asg);
-        Double cached = memo.get(key);
-        if (cached != null) return cached;
+        Nodo nodoActual = orden.get(idx);
+        String nombre = nodoActual.getNombre();
 
-        Nodo nodo = orden.get(idx);
-        String nombre = nodo.getNombre();
-
-        double res;
-        if (asg.containsKey(nombre)) {
-            res = ramaAsignada(red, orden, idx, asg, nodo, memo);
-        } else {
-            res = ramaNoAsignada(red, orden, idx, asg, nodo, memo);
+        if (estado.containsKey(nombre)) {
+            double pLocal = nodoActual.probabilidadDada(estado);
+            if (pLocal == 0.0) return 0.0;
+            return pLocal * backtrack(red, orden, idx + 1, estado);
         }
 
-        memo.put(key, res);
-        return res;
-    }
+        double sumaProbabilidades = 0.0;
+        for (String valor : red.extraerDominio(nodoActual)) {
+            estado.put(nombre, valor);
 
-    private double ramaAsignada(RedBayesiana red, List<Nodo> orden, int idx, Map<String, String> asg, Nodo nodo, Map<String, Double> memo) {
-        double pLocal = nodo.probabilidadDada(asg);
-        if (pLocal == 0.0) return 0.0;
-        return pLocal * backtrack(red, orden, idx + 1, asg, memo);
-    }
-
-    private double ramaNoAsignada(RedBayesiana red, List<Nodo> orden, int idx, Map<String, String> asg, Nodo nodo, Map<String, Double> memo) {
-        Set<String> dominio = dominioDe(red, nodo);
-        double suma = 0.0;
-
-        String nombre = nodo.getNombre();
-        for (String valor : dominio) {
-            asg.put(nombre, valor);
-            double pLocal = nodo.probabilidadDada(asg);
+            double pLocal = nodoActual.probabilidadDada(estado);
             if (pLocal != 0.0) {
-                suma += pLocal * backtrack(red, orden, idx + 1, asg, memo);
+                sumaProbabilidades += pLocal * backtrack(red, orden, idx + 1, estado);
             }
-            asg.remove(nombre);
+
+            estado.remove(nombre);
         }
-        return suma;
+        return sumaProbabilidades;
     }
 
-    /**
-     * Crea una clave compacta y estable para memoización.
-     * Solo incluye variables hasta idx-1 (ya decididas en este punto), porque las futuras aún no existen.
-     */
-    private String claveMemo(List<Nodo> orden, int idx, Map<String, String> asg) {
-        StringBuilder sb = new StringBuilder(64);
-        sb.append(idx).append('|');
-        for (int i = 0; i < idx; i++) {
-            String var = orden.get(i).getNombre();
-            String val = asg.get(var);
-            // En topológico, todas las variables previas deberían estar asignadas
-            sb.append(var).append('=').append(val).append(';');
+    private void validarParametros(RedBayesiana red, String variable, Map<String, String> evidencia) {
+        if (variable == null || !red.contieneNodo(variable)) {
+            throw new IllegalArgumentException("Variable de consulta inválida o inexistente: " + variable);
         }
-        return sb.toString();
-    }
-
-    private Set<String> dominioDe(RedBayesiana red, Nodo nodo) {
-        Set<String> dominio = red.extraerDominio(nodo);
-        if (dominio == null || dominio.isEmpty()) {
-            throw new IllegalStateException("No se pudo inferir dominio de: " + nodo.getNombre());
+        if (evidencia != null) {
+            evidencia.keySet().forEach(k -> {
+                if (!red.contieneNodo(k)) throw new IllegalArgumentException("Evidencia desconocida: " + k);
+            });
         }
-        return dominio;
     }
 }
