@@ -9,13 +9,15 @@ import org.example.view.VistaRed;
 public class Main {
     public static void main(String[] args) {
         RedBayesiana modelo = new RedBayesiana();
+
         VistaRed vista = new VistaRed();
+
         ILectorArchivos lector = new LectorArchivosTexto();
+
         ControladorRed controlador = new ControladorRed(modelo, vista, lector);
 
-        controlador.cargarEstructuraDesdeArchivo("estructura.txt");
-        controlador.cargarProbabilidadesDesdeArchivo("probabilidades.txt");
+        controlador.inicializarRed("estructura.txt", "probabilidades.txt");
 
-        controlador.ejecutarReporte();
+        controlador.mostrarSistema();
     }
 }

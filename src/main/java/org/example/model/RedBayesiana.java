@@ -1,14 +1,14 @@
 package org.example.model;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class RedBayesiana {
     private Map<String, Nodo> nodos;
 
     public RedBayesiana() {
-        this.nodos = new HashMap<>();
+        this.nodos = new LinkedHashMap<>();
     }
 
     public Nodo obtenerOCrearNodo(String nombre) {
@@ -19,7 +19,8 @@ public class RedBayesiana {
     public void agregarDependencia(String nombrePadre, String nombreHijo) {
         Nodo padre = obtenerOCrearNodo(nombrePadre);
         Nodo hijo = obtenerOCrearNodo(nombreHijo);
-        hijo.agregarPadre(padre);
+
+        hijo.vincularPredecesor(padre);
     }
 
     public Collection<Nodo> getNodos() {

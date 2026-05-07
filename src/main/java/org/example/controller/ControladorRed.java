@@ -2,18 +2,16 @@ package org.example.controller;
 
 
 import org.example.data.ILectorArchivos;
-import org.example.model.Nodo;
 import org.example.model.RedBayesiana;
 import org.example.view.VistaRed;
 
 import java.io.IOException;
-import java.util.List;
+
 
 public class ControladorRed {
-    private RedBayesiana modelo;
-    private VistaRed vista;
-    private ILectorArchivos lector;
-
+    private final RedBayesiana modelo;
+    private final VistaRed vista;
+    private final ILectorArchivos lector;
 
     public ControladorRed(RedBayesiana modelo, VistaRed vista, ILectorArchivos lector) {
         this.modelo = modelo;
@@ -21,40 +19,18 @@ public class ControladorRed {
         this.lector = lector;
     }
 
-    public void cargarEstructuraDesdeArchivo(String rutaArchivo) {
+    public void inicializarRed(String rutaEstructura, String rutaProbabilidades) {
         try {
-            List<String> lineas = lector.leerLineas(rutaArchivo);
-            for (String linea : lineas) {
-                String[] partes = linea.split(",");
-                if (partes.length == 2) {
-                    modelo.agregarDependencia(partes[0].trim(), partes[1].trim());
-                }
-            }
+            // El lector inyecta los datos directamente en el modelo (eficiencia máxima)
+            lector.construirEstructura(rutaEstructura, modelo);
+            lector.cargarProbabilidades(rutaProbabilidades, modelo);
         } catch (IOException e) {
-            vista.mostrarError("No se pudo leer la estructura: " + e.getMessage());
+            vista.mostrarError("Error crítico en la carga de datos: " + e.getMessage());
         }
     }
 
-    public void cargarProbabilidadesDesdeArchivo(String rutaArchivo) {
-        try {
-            List<String> lineas = lector.leerLineas(rutaArchivo);
-            for (String linea : lineas) {
-                String[] partes = linea.split(",");
-                if (partes.length == 3) {
-                    String nombreNodo = partes[0].trim();
-                    String condicion = partes[1].trim();
-                    Double probabilidad = Double.parseDouble(partes[2].trim());
-
-                    Nodo nodo = modelo.obtenerOCrearNodo(nombreNodo);
-                    nodo.agregarProbabilidad(condicion, probabilidad);
-                }
-            }
-        } catch (IOException | NumberFormatException e) {
-            vista.mostrarError("Error procesando probabilidades: " + e.getMessage());
-        }
-    }
-
-    public void ejecutarReporte() {
+    public void mostrarSistema() {
+        // Muestra la estructura jerárquica y las tablas cargadas
         vista.mostrarEstructura(modelo);
         vista.mostrarTablas(modelo);
     }
