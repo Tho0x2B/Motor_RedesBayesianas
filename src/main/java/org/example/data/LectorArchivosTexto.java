@@ -18,14 +18,18 @@ public class LectorArchivosTexto implements ILectorArchivos {
             String linea;
             while ((linea = br.readLine()) != null) {
                 if (!linea.trim().isEmpty()) {
+                    System.out.println("DEBUG - Leyendo: [" + linea + "]");
+
                     String[] partes = linea.split(",");
                     if (partes.length == 2) {
-                        // El orden de lectura del archivo dictará el orden en el LinkedHashMap
                         red.agregarDependencia(partes[0].trim(), partes[1].trim());
+                    } else {
+                        System.out.println("DEBUG - Línea ignorada (no detectó la coma): [" + linea + "]");
                     }
                 }
             }
         }
+
     }
 
     @Override
