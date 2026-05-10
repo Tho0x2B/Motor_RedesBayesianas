@@ -3,6 +3,7 @@ package org.example.model;
 import java.util.*;
 
 public class RedBayesiana {
+    // LinkedHashMap el String es el nombre de la variable
     private Map<String, Nodo> nodos;
 
     public RedBayesiana() {
@@ -45,7 +46,8 @@ public class RedBayesiana {
 
         ArrayDeque<Nodo> q = new ArrayDeque<>();
         for (Map.Entry<Nodo, Integer> e : indegree.entrySet()) {
-            if (e.getValue() == 0) q.add(e.getKey());
+            if (e.getValue() == 0)
+                q.add(e.getKey());
         }
 
         List<Nodo> orden = new ArrayList<>(nodos.size());
@@ -55,7 +57,8 @@ public class RedBayesiana {
             for (Nodo v : u.getHijos()) {
                 int d = indegree.get(v) - 1;
                 indegree.put(v, d);
-                if (d == 0) q.addLast(v);
+                if (d == 0)
+                    q.addLast(v);
             }
         }
 
@@ -67,11 +70,13 @@ public class RedBayesiana {
 
     /**
      * Extrae el dominio observado de una variable a partir de su CPT.
-     * Se asume que cada clave de la CPT es una lista de asignaciones 'Var=valor' separadas por ';'.
+     * Se asume que cada clave de la CPT es una lista de asignaciones 'Var=valor'
+     * separadas por ';'.
      */
     public Set<String> extraerDominio(String nombreVariable) {
         Nodo n = obtenerNodo(nombreVariable);
-        if (n == null) return Collections.emptySet();
+        if (n == null)
+            return Collections.emptySet();
         return extraerDominio(n);
     }
 
@@ -80,7 +85,8 @@ public class RedBayesiana {
         for (String condicion : nodo.getTablaProbabilidad().keySet()) {
             Map<String, String> asg = Nodo.parseAsignaciones(condicion);
             String v = asg.get(nodo.getNombre());
-            if (v != null) dom.add(v);
+            if (v != null)
+                dom.add(v);
         }
         return dom;
     }

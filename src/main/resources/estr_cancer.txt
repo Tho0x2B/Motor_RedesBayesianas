@@ -1,0 +1,2 @@
+Smoking,Lung_Tar
+Lung_Tar,Lung_Cancer

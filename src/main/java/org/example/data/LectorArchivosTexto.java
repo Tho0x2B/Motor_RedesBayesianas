@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import org.example.model.Nodo;
 import org.example.model.RedBayesiana;
 
-
 public class LectorArchivosTexto implements ILectorArchivos {
 
     @Override
@@ -51,7 +50,8 @@ public class LectorArchivosTexto implements ILectorArchivos {
 
     private BufferedReader getReader(String ruta) throws IOException {
         InputStream is = getClass().getClassLoader().getResourceAsStream(ruta);
-        if (is == null) throw new IOException("Archivo no encontrado: " + ruta);
+        if (is == null)
+            throw new IOException("Archivo no encontrado: " + ruta);
         return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
     }
 }

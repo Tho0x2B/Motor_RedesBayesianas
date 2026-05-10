@@ -7,13 +7,18 @@ import java.util.*;
 
 public class MotorInferencia {
 
-    public Map<String, Double> distribucionPosterior(RedBayesiana red, String variableConsulta, Map<String, String> evidencia) {
+    public Map<String, Double> distribucionPosterior(RedBayesiana red, String variableConsulta,
+            Map<String, String> evidencia) {
         validarParametros(red, variableConsulta, evidencia);
 
         List<Nodo> orden = red.getNodosEnOrdenTopologico();
         Set<String> dominioQ = red.extraerDominio(variableConsulta);
 
+        // distribucion de la probabilidad posterior de variable dado la evidencia
         Map<String, Double> distribucion = new LinkedHashMap<>();
+        // mantiene las asignaciones de valores a todas las variables, inicialmente a
+        // las de la evidencia, y luego se va modificando a medida que se recorre el
+        // árbol de recursión
         Map<String, String> estadoGlobal = new HashMap<>(evidencia != null ? evidencia : Collections.emptyMap());
         double sumaTotal = 0.0;
 
@@ -21,7 +26,8 @@ public class MotorInferencia {
         for (String valorPosible : dominioQ) {
             estadoGlobal.put(variableConsulta, valorPosible);
 
-            // Usamos un único mapa de estado para todo el árbol de recursión (Rápido y eficiente en RAM)
+            // Usamos un único mapa de estado para todo el árbol de recursión (Rápido y
+            // eficiente en RAM)
             double probabilidad = backtrack(red, orden, 0, estadoGlobal);
 
             distribucion.put(valorPosible, probabilidad);
@@ -43,29 +49,36 @@ public class MotorInferencia {
         return distribucion;
     }
 
-    public double probabilidadPosterior(RedBayesiana red, String variable, String valor, Map<String, String> evidencia) {
+    public double probabilidadPosterior(RedBayesiana red, String variable, String valor,
+            Map<String, String> evidencia) {
         Map<String, Double> dist = distribucionPosterior(red, variable, evidencia);
         return dist.getOrDefault(valor, 0.0);
     }
 
     private double backtrack(RedBayesiana red, List<Nodo> orden, int idx, Map<String, String> estado) {
-        if (idx >= orden.size()) return 1.0;
+        // Caso base: se llegó al ultimo nodo del orden topológico
+        if (idx >= orden.size())
+            return 1.0;
 
         Nodo nodoActual = orden.get(idx);
         String nombre = nodoActual.getNombre();
-
+        // Variable de consulta o evidencia ya asignada
         if (estado.containsKey(nombre)) {
             double pLocal = nodoActual.probabilidadDada(estado);
-            if (pLocal == 0.0) return 0.0;
+            if (pLocal == 0.0)
+                return 0.0;
             return pLocal * backtrack(red, orden, idx + 1, estado);
         }
 
+        // Variables ocultas
         double sumaProbabilidades = 0.0;
         for (String valor : red.extraerDominio(nodoActual)) {
+            // Asignar uno de los valores del dominio, temporalmente
             estado.put(nombre, valor);
 
             double pLocal = nodoActual.probabilidadDada(estado);
             if (pLocal != 0.0) {
+                // Continuar con el subarbol
                 sumaProbabilidades += pLocal * backtrack(red, orden, idx + 1, estado);
             }
 
@@ -80,7 +93,8 @@ public class MotorInferencia {
         }
         if (evidencia != null) {
             evidencia.keySet().forEach(k -> {
-                if (!red.contieneNodo(k)) throw new IllegalArgumentException("Evidencia desconocida: " + k);
+                if (!red.contieneNodo(k))
+                    throw new IllegalArgumentException("Evidencia desconocida: " + k);
             });
         }
     }

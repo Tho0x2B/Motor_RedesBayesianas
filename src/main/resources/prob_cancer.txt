@@ -1,0 +1,10 @@
+Smoking,Smoking=0,0.4
+Smoking,Smoking=1,0.6
+Lung_Tar,Smoking=0;Lung_Tar=0,0.8
+Lung_Tar,Smoking=0;Lung_Tar=1,0.2
+Lung_Tar,Smoking=1;Lung_Tar=0,0.1
+Lung_Tar,Smoking=1;Lung_Tar=1,0.9
+Lung_Cancer,Lung_Tar=0;Lung_Cancer=0,0.5
+Lung_Cancer,Lung_Tar=0;Lung_Cancer=1,0.5
+Lung_Cancer,Lung_Tar=1;Lung_Cancer=0,0.7
+Lung_Cancer,Lung_Tar=1;Lung_Cancer=1,0.3

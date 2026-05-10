@@ -19,7 +19,7 @@ public class ControladorRed {
     private final MotorInferencia motor; // Dependencia inyectada
 
     public ControladorRed(RedBayesiana modelo, VistaRed vista, ILectorArchivos lector,
-                          ConsultaParser parser, MotorInferencia motor) {
+            ConsultaParser parser, MotorInferencia motor) {
         this.modelo = modelo;
         this.vista = vista;
         this.lector = lector;
@@ -60,7 +60,8 @@ public class ControladorRed {
 
     private Map<String, String> toMap(List<Asignacion> evidencia) {
         Map<String, String> m = new LinkedHashMap<>();
-        if (evidencia == null) return m;
+        if (evidencia == null)
+            return m;
         for (Asignacion a : evidencia) {
             m.put(a.getVariable(), a.getValor());
         }
