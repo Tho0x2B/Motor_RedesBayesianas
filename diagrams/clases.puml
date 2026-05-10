@@ -1,0 +1,120 @@
+@startuml
+' Modelo
+package Modelo {
+    +class Asignacion {
+        -variable: String
+        -valor: String
+        +Asignacion(variable: String, valor: String)
+        +String getVariable()
+        +String getValor()
+        +String toString()
+    }
+
+    +class Consulta {
+        -variable: String
+        -valorOpcional: String
+        +Consulta(variable: String, valorOpcional: String, evidencia: List<Asignacion>)
+        +String getVariable()
+        +String getValorOpcional()
+        +List<Asignacion> getEvidencia()
+    }
+
+    +class Nodo {
+        -nombre: String
+        -tablaProbabilidad: Map<String,Double>
+        +Nodo(nombre: String)
+        +void vincularPredecesor(padre: Nodo)
+        +void agregarProbabilidad(condicion: String, probabilidad: Double)
+        +String getNombre()
+        +List<Nodo> getPadres()
+        +List<Nodo> getHijos()
+        +Map<String, Double> getTablaProbabilidad()
+        +Map<String, String> parseAsignaciones(condicion: String)
+        +double probabilidadDada(asignacion: Map<String, String>)
+    }
+
+    +class RedBayesiana {
+        -nodos: Map<String, Nodo>
+        +RedBayesiana()
+        +Nodo obtenerOCrearNodo(nombre: String)
+        +Nodo obtenerNodo(nombre: String)
+        +boolean contieneNodo(nombre: String)
+        +void agregarDependencia(nombrePadre: String, nombreHijo: String)
+        +Collection<Nodo> getNodos()
+        +List<Nodo> getNodosEnOrdenTopologico()
+        +Set<String> extraerDominio(nombreVariable: String)
+        +Set<String> extraerDominio(nodo: Nodo)
+    }
+}
+
+Nodo "0..*" -- "0..*" Nodo : hijos
+Nodo "0..*" -- "0..*" Nodo : padres
+Consulta *-- Asignacion : evidencia
+RedBayesiana o-- "0..*" Nodo : contiene
+
+' Vista
+package Vista {
+    +class VistaRed {
+        +void mostrarEstructura(red: RedBayesiana)
+        +void mostrarTablas(red: RedBayesiana)
+        +void mostrarDistribucion(variable: String, evidencia: Map<String, String>, distribucion: Map<String, Double>)
+        +void mostrarProbabilidadPuntual(variable: String, valor: String, evidencia: Map<String, String>, p: double)
+        +void mostrarError(mensaje: String)
+    }
+}
+
+VistaRed ..> RedBayesiana : "usa"
+VistaRed ..> Nodo : "usa"
+
+' Controlador
+package Controlador {
+    +interface IConsultaParser {
+        ~Consulta parse(input: String)
+    }
+
+    +class ConsultaParser {
+        +Consulta parse(input: String)
+        -List<Asignacion> parseEvidencia(evidencePart: String)
+    }
+
+    +class MotorInferencia {
+        +Map<String, Double> distribucionPosterior(red: RedBayesiana, variableConsulta: String, evidencia: Map<String, String>)
+        +double probabilidadPosterior(red: RedBayesiana, variable: String, valor: String, evidencia: Map<String, String>)
+        -double backtrack(red: RedBayesiana, orden: List<Nodo>, idx: int, estado: Map<String, String>)
+        -void validarParametros(red: RedBayesiana, variable: String, evidencia: Map<String, String>)
+    }
+
+    +class ControladorRed {
+        +ControladorRed(modelo: RedBayesiana, vista: VistaRed, lector: Datos.ILectorArchivos, parser: ConsultaParser, motor: MotorInferencia)
+        +void inicializar(archivoEstructura: String, archivoProbabilidades: String)
+        +void procesarConsulta(comandoUsuario: String)
+        -Map<String, String> toMap(evidencia: List<Asignacion>)
+    }
+}
+
+ConsultaParser ..> Asignacion : "usa"
+IConsultaParser <|.. ConsultaParser
+MotorInferencia --> Nodo : "usa"
+MotorInferencia --> RedBayesiana : "usa"
+ControladorRed --> RedBayesiana : "usa"
+ControladorRed --> VistaRed : "usa"
+ControladorRed --> ConsultaParser : "usa"
+ControladorRed --> MotorInferencia : "usa"
+ControladorRed --> Datos.ILectorArchivos : "usa"
+
+' Datos
+package Datos {
+    +interface ILectorArchivos {
+        +void construirEstructura(ruta: String, red: RedBayesiana)
+        +void cargarProbabilidades(ruta: String, red: RedBayesiana)
+    }
+
+    +class LectorArchivosTexto {
+        +void construirEstructura(ruta: String, red: RedBayesiana)
+        +void cargarProbabilidades(ruta: String, red: RedBayesiana)
+        -BufferedReader getReader(ruta: String)
+    }
+}
+
+Datos.ILectorArchivos <|.. Datos.LectorArchivosTexto
+@enduml
