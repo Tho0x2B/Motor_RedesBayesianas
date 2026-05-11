@@ -2,6 +2,9 @@ package org.example.model;
 
 import java.util.*;
 
+/**
+ * Modelo de red bayesiana: grafo dirigido acíclico con nodos y CPTs.
+ */
 public class RedBayesiana {
     // LinkedHashMap el String es el nombre de la variable
     private Map<String, Nodo> nodos;

@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.*;
 
 
+/**
+ * Vista por consola para inspeccionar la red y mostrar resultados de inferencia.
+ */
 public class VistaRed {
 
     public void mostrarEstructura(RedBayesiana red) {

@@ -2,6 +2,9 @@ package org.example.model;
 
 import java.util.*;
 
+/**
+ * Nodo de una red bayesiana con relaciones y tabla de probabilidad condicional (CPT).
+ */
 public class Nodo {
     private String nombre;
     private List<Nodo> padres;

@@ -10,6 +10,9 @@ import org.example.view.VistaRed;
 
 import java.util.Scanner;
 
+/**
+ * Punto de entrada de la aplicación de consola para el motor bayesiano.
+ */
 public class Main {
     public static void main(String[] args) {
         // 1. Instanciación de componentes base (Grafo, UI, Lógica)
@@ -54,6 +57,9 @@ public class Main {
         }
     }
 
+    /**
+     * Par genérico usado para retornar dos rutas en una sola llamada.
+     */
     public record Pair<K, V>(K key, V value) {
     }
 

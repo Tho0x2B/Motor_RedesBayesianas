@@ -9,6 +9,9 @@ import java.nio.charset.StandardCharsets;
 import org.example.model.Nodo;
 import org.example.model.RedBayesiana;
 
+/**
+ * Lector basado en archivos de texto (recursos del classpath) para construir la red y sus CPTs.
+ */
 public class LectorArchivosTexto implements ILectorArchivos {
 
     @Override

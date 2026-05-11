@@ -3,6 +3,9 @@ package org.example.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Consulta parseada del usuario: variable objetivo, valor opcional y evidencia.
+ */
 public final class Consulta {
     private final String variable;
     private final String valorOpcional;

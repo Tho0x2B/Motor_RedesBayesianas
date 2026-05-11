@@ -11,6 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Orquesta el flujo: carga de red, parseo de consultas e impresión de resultados.
+ */
 public class ControladorRed {
     private final RedBayesiana modelo;
     private final VistaRed vista;

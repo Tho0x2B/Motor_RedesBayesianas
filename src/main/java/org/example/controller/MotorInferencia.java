@@ -5,6 +5,9 @@ import org.example.model.RedBayesiana;
 
 import java.util.*;
 
+/**
+ * Motor de inferencia por enumeración usando backtracking sobre un orden topológico.
+ */
 public class MotorInferencia {
 
     public Map<String, Double> distribucionPosterior(RedBayesiana red, String variableConsulta,
